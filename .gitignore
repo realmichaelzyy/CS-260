@@ -1,0 +1,8 @@
+*.pdf
+*.png
+
+octave-workspace
+*.aux
+*.tex
+*.log
+*.gz
