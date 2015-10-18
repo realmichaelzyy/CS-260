@@ -9,10 +9,13 @@ printf("Loading data...\n");
 [valid_data, valid_labels] = one_hot("car_valid.data", 389);
 
 for k = 1:2:23
-  printf("Using k = %d\n", k);
+  % printf("Using k = %d\n", k);
   fflush(stdout);
   [valid_accu, train_accu] = knn_classify(train_data, train_labels, valid_data, valid_labels, k);
-  printf("Training Accuracy: %f, Validation Accuracy: %f\n", train_accu, valid_accu);
+  [test_accu, train_accu] = knn_classify(train_data, train_labels, valid_data, valid_labels, k);
+  % printf("Training Accuracy: %f, Validation Accuracy: %f\n", train_accu, valid_accu);
+  printf("\\\hline\n");
+  printf("%d & %f & %f & %f\n", k, train_accu, valid_accu, test_accu);
   fflush(stdout);
 endfor
 
