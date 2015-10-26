@@ -9,3 +9,5 @@ octave-workspace
 *.tex
 *.log
 *.gz
+
+project/

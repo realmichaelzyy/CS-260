@@ -12,14 +12,18 @@ function [ costs, weights ] = logistic_regression( features, labels, step_size, 
 
 N = size(features, 1);
 D = size(features, 2);
-weights = ones(D, 1);
+weights = zeros(D, 1);
+b = 0.1;
 costs = zeros(iterations, 1);
 
 for i = 1:iterations
     % calculate sigma
-    sigma = 1 ./ (1 + exp(-(features * weights)));
+    sigma = 1 ./ (1 + exp(-(b + (features * weights))));
+    % bound sigma at [1e-16, 1 - 1e-16]
+    sigma = max(sigma, 1e-16);
+    sigma = min(sigma, 1 - 1e-16);
     % calculate costs, while lower bounding sigma and 1-sigma at 1e-16
-    cost_vec = ((1 - labels) .* log(max(1 - sigma, 1e-16))) + (labels .* log(max(sigma, 1e-16)));
+    cost_vec = ((1 - labels) .* log(1 - sigma)) + (labels .* log(sigma));
     cost = -sum(cost_vec);
     if (regularization > 0)
         cost = cost + regularization * norm(weights);
@@ -30,9 +34,12 @@ for i = 1:iterations
         disp(sprintf('Iteration %d', i));
         disp(sprintf('Cost: %0.16f', cost));
     end
+    
     % update weights
     de_dw = sum(bsxfun(@times, (sigma - labels), features));
     weights = weights - (step_size * de_dw');
+    de_db = sum(sigma - labels);
+    b = b - (step_size * de_db);
     if (regularization > 0)
         weights = weights - (2 * regularization * weights);
     end
