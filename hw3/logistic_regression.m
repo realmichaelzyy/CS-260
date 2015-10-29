@@ -1,4 +1,4 @@
-function [ costs, weights ] = logistic_regression( features, labels, step_size, iterations, regularization, debug )
+function [ costs, weights, b ] = logistic_regression( features, labels, step_size, iterations, regularization, debug )
 % Performs logistic regression with the specified options
 % Arguments:
 %   1. features - an NxD matrix where each row is a training example of D
@@ -37,12 +37,10 @@ for i = 1:iterations
     
     % update weights
     de_dw = sum(bsxfun(@times, (sigma - labels), features));
-    weights = weights - (step_size * de_dw');
     de_db = sum(sigma - labels);
     b = b - (step_size * de_db);
-    if (regularization > 0)
-        weights = weights - (2 * regularization * weights);
-    end
+    regularization = max(0, regularization);
+    weights = weights - step_size * (de_dw' + 2 * regularization * weights);
 end
 
 end

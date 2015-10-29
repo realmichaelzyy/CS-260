@@ -1,48 +1,51 @@
+% Q4) Logistic Regression with Regularization
+
 disp('Loading data...');
 [spam_train_f, spam_train_l, spam_test_f, spam_test_l] = bag_of_words();
 [ion_train_f, ion_train_l, ion_test_f, ion_test_l] = ionosphere_load();
 
 l2_norms = ones(2, 5);
 steps = { 0.001, 0.01, 0.05, 0.1, 0.5 };
-plotStyle = {'b-o', 'g-o', 'r-o', 'c-o', 'k-o'};
-legendInfo = cell(5, 1);
 
 % plot for ham/spam
 hold on
 for i = 1:length(steps)
-    [costs, weights] = logistic_regression(spam_train_f, spam_train_l, steps{i}, 50, 0.1, false); 
-    plot(1:length(costs), costs, plotStyle{i});
-    legendInfo{i} = num2str(steps{i});
+    [costs, weights, b] = logistic_regression(spam_train_f, spam_train_l, steps{i}, 50, 0.1, false); 
+    l2_norms(1, i) = norm(weights);
+    subplot(length(steps), 1, i);
+    plot(1:length(costs), costs);
+    title(sprintf('step size = %0.2f', steps{i}));
 end
-legend(legendInfo);
-title('EmailSpam Classification with Regularization');
+suptitle('EmailSpam Classification')
 xlabel('Number Iterations');
 ylabel('Cross-Entropy');
 hold off
-print('ham_reg_many', '-dpng');
+print('emailspam_grad_reg', '-dpng', '-r100');
 clf
 
 % plot for ion
 hold on
 for i = 1:length(steps)
-    [costs, weights] = logistic_regression(ion_train_f, ion_train_l, steps{i}, 50, 0.1, false); 
-    plot(1:length(costs), costs, plotStyle{i});
-    legendInfo{i} = num2str(steps{i});
+    [costs, weights, b] = logistic_regression(ion_train_f, ion_train_l, steps{i}, 50, 0.1, false); 
+    l2_norms(2, i) = norm(weights);
+    subplot(length(steps), 1, i);
+    plot(1:length(costs), costs);
+    title(sprintf('step size = %0.2f', steps{i}));
 end
-legend(legendInfo);
-title('Ionosphere Classification with Regularization');
+suptitle('Ionosphere Classification')
 xlabel('Number Iterations');
 ylabel('Cross-Entropy');
 hold off
-print('ion_reg_many', '-dpng');
+print('ion_grad_reg', '-dpng', '-r100');
 clf
 
 % L2 norm at step size 0.01
 for lambda = 0:0.05:0.5
-    [costs, weights] = logistic_regression(spam_train_f, spam_train_l, 0.01, 50, lambda, false); 
-    [costs2, weights2] = logistic_regression(ion_train_f, ion_train_l, 0.01, 50, lambda, false);
-    disp(sprintf('%0.2f & %0.4f & %0.4f \\\\', lambda, norm(weights), norm(weights2)));
-    disp('\hline');
+    [costs, weights, b] = logistic_regression(spam_train_f, spam_train_l, 0.01, 50, lambda, false); 
+    [costs2, weights2, b] = logistic_regression(ion_train_f, ion_train_l, 0.01, 50, lambda, false);
+    % uncomment to display L2 Norms in latex table format
+    %disp(sprintf('%0.2f & %0.4f & %0.4f \\\\', lambda, norm(weights), norm(weights2)));
+    %disp('\hline');
 end
 
 % 10 plots of train/test curves for different reg coeffecients
@@ -55,19 +58,17 @@ for s = 1:length(steps)
     ion_test = [];
     for lambda = 0:0.05:0.5
         x = [ x lambda ];
-        [train_costs, weights] = logistic_regression(spam_train_f, spam_train_l, step_size, 50, lambda, false);
-        spam_train = [ spam_train train_costs(length(train_costs)) ];
-        [test_costs, weights] = logistic_regression(spam_test_f, spam_test_l, step_size, 50, lambda, false);
-        spam_test = [ spam_test test_costs(length(test_costs)) ];
-        [train_costs, weights] = logistic_regression(ion_train_f, ion_train_l, step_size, 50, lambda, false);
-        ion_train = [ ion_train train_costs(length(train_costs)) ];
-        [test_costs, weights] = logistic_regression(ion_test_f, ion_test_l, step_size, 50, lambda, false);
-        ion_test = [ ion_test test_costs(length(test_costs)) ];
+        [train_costs, spam_weights, b] = logistic_regression(spam_train_f, spam_train_l, step_size, 50, lambda, false);
+        spam_train = [ spam_train cross_entropy(spam_train_f, spam_train_l, spam_weights, b) ];
+        spam_test = [ spam_test cross_entropy(spam_test_f, spam_test_l, spam_weights, b) ];
+        [train_costs, ion_weights, b] = logistic_regression(ion_train_f, ion_train_l, step_size, 50, lambda, false);
+        ion_train = [ ion_train cross_entropy(ion_train_f, ion_train_l, ion_weights, b) ];
+        ion_test = [ ion_test cross_entropy(ion_test_f, ion_test_l, ion_weights, b) ];
     end
     
     hold on
-    plot(x, spam_train, 'r-o');
-    plot(x, spam_test, 'b-o');
+    plot(x, spam_train);
+    plot(x, spam_test, 'LineStyle', '--');
     legend({'train', 'test'});
     title(strcat('EmailSpam Cross-Entropy with step size = ', num2str(step_size)));
     xlabel('Regularization Coeffecient');
@@ -77,8 +78,8 @@ for s = 1:length(steps)
     clf 
     
     hold on
-    plot(x, ion_train, 'r-o');
-    plot(x, ion_test, 'b-o');
+    plot(x, ion_train);
+    plot(x, ion_test, 'LineStyle', '--');
     legend({'train', 'test'});
     title(strcat('Ionosphere Cross-Entropy with step size = ', num2str(step_size)));
     xlabel('Regularization Coeffecient');

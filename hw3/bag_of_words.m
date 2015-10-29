@@ -26,8 +26,9 @@ function [ train_features, train_labels, test_features, test_labels ] = bag_of_w
         for j = tokenIndx.keys()
             if tokenIndx(j{1}) == wordIndx
                 word = j{1};
-                disp(word);
-                disp(count);
+                % uncomment to display top counts
+                %disp(word);
+                %disp(count);
                 continue;
             end
         end

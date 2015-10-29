@@ -3,6 +3,7 @@
 *.txt
 *.m~
 *.dat
+*.zip
 
 octave-workspace
 *.aux
