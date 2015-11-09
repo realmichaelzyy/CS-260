@@ -1,0 +1,8 @@
+\begin{thebibliography}{1}
+
+\bibitem{crammer}
+Koby Crammer, Ofer Dekel, Joseph Keshet, Shai Shalev-Shwartz, and Yoram Singer.
+\newblock Online passive-aggressive algorithms.
+\newblock {\em J. Mach. Learn. Res.}, 7:551--585, December 2006.
+
+\end{thebibliography}
