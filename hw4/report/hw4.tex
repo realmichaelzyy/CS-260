@@ -1,0 +1,146 @@
+\documentclass[12pt]{article}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{natbib}
+\renewcommand{\thesubsection}{\alph{subsection}.}
+
+\begin{document}
+\title{Homework \#4}
+\author{Yoav Zimmerman (304125151) \\
+	    CS 260: Machine Learning Algorithms \\
+	   Collaborators: Joey Cox, Andrew Wong}
+\maketitle
+
+\section{Linear Regression with Heterogenous Noise}
+\begin{enumerate}[label=\alph*.]
+	\item For this problem, we will consider the following probability model with heterogenous noise:
+	\begin{gather*}
+		y_n = x_n^T \, \beta + \epsilon_n
+	\end{gather*}
+	Where the 	noise is modeled as a Gaussian function $\epsilon_n ~ \mathcal{N}(0, \sigma_n^2)$, where each training sample $n$ may have a unique distribution $\sigma_n$.
+
+	The log-likelihood can be derived by taking the log of the product of all conditional probabilities in our training set and plugging in the Gaussian function:
+	\begin{gather*}
+		ln(P(D)) = ln \prod_{n=1}^{N}{ P(y_n | x_n) } \\
+		ln(P(D)) = \sum_{n=1}^N{ \bigg( - ln( \cfrac{1}{\sqrt{2 \, \pi} \, \sigma_n} ) - \cfrac{ (y_n - x_n^T \, \beta)^2 }{ 2 \sigma_n^2 } \bigg) } \\
+    	\end{gather*} 
+
+	\item To derive the maximum likelihood estimate for $\beta$, we take the partial derivative of the log likelihood and set it to 0. The first sum term does not include $\beta$ and drops out of the derivative:
+	\begin{gather*}
+		\frac{\partial}{\partial \mathbf{\beta}} ln (P (D)) = 0 \\
+		\sum^N{ \cfrac{ y_n - \mathbf{x_n^T} \, \mathbf{\beta} }{ \sigma_n^2 } \mathbf{x_n} } = 0 \\
+		\sum^N{ \cfrac{ y_n }{ \sigma_n^2 } \mathbf{x_n} } = \sum^N{ \cfrac{ \mathbf{x_n^T} \, \mathbf{\beta} }{ \sigma_n^2 } \mathbf{x_n} } \\
+		\sum^N{ \cfrac{ y_n }{ \sigma_n^2 } \mathbf{x_n} } = \mathbf{\beta} \, \sum^N{ \mathbf{x_n^T} \big( \cfrac{\mathbf{x_n}}{ \sigma_n^2 } \big) }\\
+		\mathbf{\beta} = \bigg( \sum^N{ \mathbf{x_n^T} \big( \cfrac{\mathbf{x_n}}{ \sigma_n^2 } \big) } \bigg)^{-1} \sum^N{ \cfrac{ y_n }{ \sigma_n^2 } \mathbf{x_n} }
+	\end{gather*}
+\end{enumerate}
+
+\section{Linear Regression with Smooth Coeffecients}
+\begin{enumerate}[label=\alph*.]
+	\item Assuming a weight vector $\beta \in \mathbb{R}^D$, we can add a natural ordering regularization term by adding the difference term $(\beta_d - \beta_{d+1})^2$ when minimizing negative log-likelihood. Together with the standard regularization term, the optimization problem becomes
+
+	\begin{gather*}
+		\arg\!\min_{\beta} \mathcal{E}(\beta) = -\sum_{n=1}^N{ P( y_n | x_n ) } + \lambda_1 \, \sum_{d=1}^{D-1}{(\beta_d - \beta_{d+1})^2} +  \lambda_2 \, \lVert \mathbf{\beta} \rVert^2_2
+	\end{gather*}
+
+	Where $\lambda_1$ is the regularization coeffecient to control smoothing of the coeffecients and $\lambda_2$ is the general regularization coeffecient to keep the weights low.
+
+	\item To derive the maximum likelihood estimate for $\beta$, we take the partial derivative of the log likelihood and set it to 0. The second term is the trickiest in this derivative, so we will work it out first. To make it clear we write out all of the sum components and take the partial derivative of each component of $\beta$.
+	
+	\begin{gather*}
+		\frac{\partial}{\partial \beta} \lambda_1 ( \beta_0^2 - 2 \beta_0 \beta_1 + \beta_1^2 + \beta_1^2 - 2 \beta_1 \beta_2 + \dots + \beta_{D-1}^2 ) \\
+		\\
+		\lambda_1	
+			\begin{bmatrix}
+				2\beta_0 - 2\beta_1 \\
+				-2\beta_0 + 4\beta_1 - 2\beta_2 \\
+				\dots \\
+				-2\beta_{D-1} + 2\beta_D
+			\end{bmatrix} \\
+		\\
+		2 \lambda_1 
+			\begin{bmatrix}
+				1 & -1 & 0 & 0 & 0 & \dots & 0 & 0 \\
+				-1 & 2 & -1 & 0 & 0 & \dots & 0 & 0\\
+				0 & -1 & 2 & -1 & 0 & \dots & 0 & 0 \\
+				\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\
+				0 & 0 & 0 & 0 & 0 & \dots & -1 & 1 
+			\end{bmatrix} \beta \\
+		\\
+		2 \lambda_1 \mathbf{\mathcal{M}} \beta
+	\end{gather*}
+
+	Where $\mathcal{M}$ is a DxD matrix that follows the pattern above. Now that we have the derivative with respect to $\beta$ for the second term in the log-likelihood function, we take find the derivative of the other terms and set it equal to 0 to minimize.
+
+	\begin{gather*}
+		\frac{\partial}{\partial \beta} ln (P (D)) = 0 \\
+		\mathbf{X^T X \beta} - \mathbf{X^T y} + 2 \lambda_1  \mathbf{\mathcal{M}} \beta + 2 \lambda_2 \beta = 0 \\
+		\beta \big( \mathbf{X^T X} + 2 \lambda_1  \mathbf{\mathcal{M}} + diag(2 \lambda_2) \big) = \mathbf{X^T y} \\
+		\beta = \big( \mathbf{X^T X} + 2 \lambda_1  \mathbf{\mathcal{M}} + diag(2 \lambda_2) \big)^{-1} \mathbf{X^T y}
+	\end{gather*}
+\end{enumerate}
+
+\section{Linearly Constrained Linear Regression}
+
+	We can write out this problem as the general case of gaussian linear regression with a lagragian term specifying the constraint
+
+	\begin{gather*}
+		\sum_{n=1}^N{ \bigg( - ln( \cfrac{1}{\sqrt{2 \, \pi} \, \sigma_n} ) - \cfrac{ (y_n - x_n^T \, \beta)^2 }{ 2 \sigma_n^2 } \bigg) } + \lambda ( \beta - \mathbf{A}^{-1}\mathbf{b} )^2
+	\end{gather*}
+
+	Next, we take the derivative of the above expression with respect to $\beta$ and equate it to 0, solving for $\beta$.
+
+	\begin{gather*}
+		\mathbf{X^T X \beta} - \mathbf{X^T y} + 2 \lambda ( \beta - \mathbf{A}^{-1}\mathbf{b} ) = 0 \\
+		\mathbf{X^T X \beta} + 2 \lambda \beta = \mathbf{X^T y} + 2 \lambda \mathbf{A^{-1}} b \\
+		\beta = (\mathbf{X^T X} + 2 \lambda I)^{-1} (\mathbf{X^T \, y}  + 2 \lambda \mathbf{A^{-1} b})
+	\end{gather*}
+
+	Finally, we plug in the value found for $\beta$ back into the constraint $\beta = \mathbf{A}^{-1}\mathbf{b}$.
+
+	\begin{gather*}
+		(\mathbf{X^T X} + 2 \lambda I)^{-1} (\mathbf{X^T \, y}  + 2 \lambda \mathbf{A^{-1} b}) = \mathbf{A}^{-1}\mathbf{b} \\
+		\mathbf{X^T \, y}  + 2 \lambda \mathbf{A^{-1} b} = (\mathbf{X^T X} + 2 \lambda I) \mathbf{A}^{-1}\mathbf{b} \\
+		 \mathbf{A}^{-1}\mathbf{b} = \beta = (\mathbf{X^T \, X})^{-1} \mathbf{X^T} \mathbf{y}
+	\end{gather*}
+
+	As can be seen above, we reach the form $ (\mathbf{X^T \, X})^{-1} \mathbf{X^T} \mathbf{y}$ for an estimation for $\beta$, which also happens to be the estimation for the general case of gaussian linear regression. This seems wrong intuitively, but it is 3 AM and I've been stuck on this problem for 3 hours with little hope of ever solving it before class begins in 5 hours. So I shall raise the towel in defeat. Yoav: 0, Linearly Constrained Linear Regression: 1.
+
+\section{Online Learning}
+
+	The first step in this problem is to decide on a loss function $l(\mathbf{w}; \mathbf{x}, y)$ which defines the error on a given training example $(\mathbf{x}, y)$. For this problem, we will define a hinge-loss function that assigns a loss to any example that doesn't achieve a margin of at least 1 (Crammer et. al \cite{crammer}).
+	\begin{gather*}
+		l(\mathbf{w}; \mathbf{x}, y) = \begin{cases}
+			0 & y(\mathbf{w^T \, x}) \geq 1 \\
+			1 - y(\mathbf{w^T \, x}) & otherwise \\
+		\end{cases}
+	\end{gather*}
+
+	For every example encountered, we want to make the loss function zero while minimizing the difference between the new weights. We can write this as the optimization problem with a langragian multiplier (constraint) that $y(\mathbf{w^T \, x}) = 1$.
+	\begin{gather*}
+		w_{i+1} = argmin_{w_{i+1}} \frac{1}{2} \lVert \mathbf{w_{i+1}} - \mathbf{w_i} \rVert^2_2 + \lambda ( y_i(\mathbf{w_{i+1}^T \, x}) - 1)
+	\end{gather*}
+	
+	To solve the above, we take the derivative with respect to $\mathbf{w_{i+1}}$ and solve for $\mathbf{w_{i+1}}$.
+	\begin{gather*}
+		\frac{\partial}{\partial \mathbf{w_{i+1}}} \bigg( \frac{1}{2} \lVert \mathbf{w_{i+1}} - \mathbf{w_i} \rVert^2_2 + \lambda ( y_i(\mathbf{w_{i+1}^T \, x}) - 1) \bigg) = 0 \\
+		-y_n \mathbf{x_n} \lambda + \mathbf{w_{i+1}} - \mathbf{w_i} = 0 \\
+		\mathbf{w_{i+1}} = y_n \mathbf{x_n} \lambda + \mathbf{w_i}
+	\end{gather*}
+	
+	Now, we can plug in the above into the $y(\mathbf{w^T \, x}) = 1$ constraint, solve for $\lambda$, and plug $\lambda$ back into the original derivative.
+	\begin{gather*}
+		1 = y_n \mathbf{x_n} ( y_n \mathbf{x_n} \lambda + \mathbf{w_i} ) \\
+		1 = \lambda \lVert \mathbf{x_n} \rVert^2 + y_n \mathbf{w_i^T} \mathbf{x_n} \\
+		\lambda = \cfrac{ 1 - y_n \mathbf{w_i^T} \mathbf{x_n}}{\lVert \mathbf{x_n} \rVert^2}
+		\\
+		-y_n \mathbf{x_n} \bigg( \cfrac{ 1 - y_n \mathbf{w_i^T} \mathbf{x_n}}{\lVert \mathbf{x_n} \rVert^2} \bigg) + \mathbf{w_{i+1}} - \mathbf{w_i} = 0 \\
+		\mathbf{w_{i+1}} = \mathbf{w_i} + y_n \mathbf{x_n} \bigg( \cfrac{ 1 - y_n \mathbf{w_i^T} \mathbf{x_n}}{\lVert \mathbf{x_n} \rVert^2} \bigg)
+	\end{gather*}
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\end{document}

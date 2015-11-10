@@ -3,7 +3,7 @@
     preprocess(true);
 
 % 5.3 - cross validation for SVM
-C = [ 4^-6 ; 4^-4 ; 4^-2 ; 4 ; 4^2 ];
+C = [ 4^-6 ; 4^-4 ; 4^-2 ; 4^0 ; 4^2 ];
 num_folds = size(C, 1);
 indices = crossvalind('Kfold', size(train_features, 1), num_folds);
 accus = [];

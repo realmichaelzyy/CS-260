@@ -1,0 +1,175 @@
+\documentclass[12pt]{article}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\renewcommand{\thesubsection}{\alph{subsection}.}
+
+\begin{document}
+\title{Homework \#1}
+\author{Yoav Zimmerman}
+\maketitle
+
+\section{Sequence of Coin Flips}
+Suppose you have a biased coin with probability of heads equal to p. Imagine that you flip this coin until observing the first heads. Let X denote the number of flips needed to observe the first heads.
+
+\begin{enumerate}[label=\alph*.]
+    \item \( P[X = k] = (1-p)^{(k-1)}p\)
+    \item Directly from above, we start with \\
+	\begin{gather*}
+	    P[X \geq x_0] = \sum_{x = x_0}^{\infty} (1-p)^{x-1}p
+	\end{gather*}
+             We can use the fact that this is a geometric series to reduce to the following \\
+	\begin{gather*}
+	    P[X \geq x_0] = p[\frac{(1-p)^{x_0-1}}{1 - (1-p)} ] \\
+	    P[X \geq x_0] = \frac{p(1-p)^{x_0-1}}{p} \\
+	    P[X \geq x_0] = (1-p)^{x_0-1} \\
+	\end{gather*}
+    \item We begin with the conditional term we are interested in and apply Bayes Rule
+	\begin{gather*}
+	    P[p > \frac{1}{2} | X = 1] \\
+	    \frac{P(X = 1 | p > \cfrac{1}{2})P(p > \cfrac{1}{2})}{P(X = 1)}
+	\end{gather*}
+	We use the definition of conditional probability to reduce to the following:
+	\begin{gather*}
+	    \cfrac{P(X = 1 \cap p > \cfrac{1}{2})}{P(X = 1)} 
+	\end{gather*}
+	Finally, can plug in the function from part a) and integrate. The denominator term is integrated from 0 to 1 because the distribution of \( p \) is implicitly assumed to be uniform without a conditional prior term.
+	\begin{gather*}
+	    \cfrac{\int_{0.5}^{1} p \, dp}{\int_{0}^{1} p \, dp} \\
+	    \mathbf{\frac{3}{4}}
+	\end{gather*}
+	Therefore, \( \mathbf{P[p > \frac{1}{2} | X = 1] = \cfrac{3}{4}} \)
+\end{enumerate}
+
+\section{Convex Functions and Information Theory}
+\begin{enumerate}[label=\alph*.]
+    \item A function \( f(x) \) is convex iff \( f''(x) \geq 0 \) for all \(x\).
+    	\begin{gather*}
+	    f(x) = |x| + e^x \\
+	    f'(x) = \pm1 + e^x \\
+	    f''(x) = e^x
+	\end{gather*}
+	Since \( e^x \geq 0 \) for all \(x\), then the original function \( f(x) \) is convex.
+    \item The entropy over a discrete random variable is always maximized with a uniform distribution. In this case, this would mean the entropy is maximized when \( p_i = \frac{1}{k} \) for all i.
+\end{enumerate}
+
+\section{Linear Algebra}
+\begin{enumerate}[label=\alph*.]
+    \item A matrix C is positive semi-definite iff \( u^TCu \geq 0 \) for all real, non-zero \(u\). Plugging in the covariance matrix as C, the inequality becomes the following:
+    	\begin{gather*}
+	    u^T\mathbb{E}[(\mathbf{X} - \mathbb{E}\mathbf{X})(\mathbf{X} - \mathbb{E}\mathbf{X})^T]u \geq 0 \\
+	    \mathbb{E}[u^T(\mathbf{X} - \mathbb{E}\mathbf{X})(\mathbf{X} - \mathbb{E}\mathbf{X})^Tu] \geq 0 \\
+	    \mathbb{E}[(u^T(\mathbf{X} - \mathbb{E}\mathbf{X}))^2] \geq 0 \\
+	\end{gather*}
+	We know that the scalar \( (u^T(\mathbf{X} - \mathbb{E}\mathbf{X}))^2 \geq 0 \) since the square of any real number is greater than or equal to zero. It follows that \( \mathbb{E}[(u^T(\mathbf{X} - \mathbb{E}\mathbf{X}))^2] \geq 0 \) and that \textbf{any covariance matrix is positive-semidefinite}.
+    \item We begin with the definition of an eigenvector: \( (A - \lambda I)\vec{u} = 0 \) for an eigenvalue \(\lambda\) and an eigenvector \(\vec{u}\). For matrices \(A\) and \(B\) and respective eigenvalues \(\alpha_1\) and \(\beta_1\) we can write the definitions of their eigenvectors and eigenvalues.
+	\begin{gather*}
+	    (A - \alpha_1 I)\vec{u_1} = 0 \\
+	    (B - \beta_1 I)\vec{u_1} = 0 
+	\end{gather*}
+    To find the same identity form for \( C = A + B \), we add them as following:
+	\begin{gather*}
+	    (A - \alpha_1 I)\vec{u_1} + (B - \beta_1 I)\vec{u_1}  = 0 \\
+	    (A + B - \alpha_1 I - \beta_1 I)\vec{u_1} = 0 \\
+	    \mathbf{(A + B - (\alpha_1 + \beta_1) I)\vec{u_1} = 0}
+	\end{gather*}
+    Therefore, for \(C\), all eigenvalues are \(\alpha_1 + \beta_1\), \(\alpha_2 + \beta_2\), ... with respective eigenvectors \(\vec{u_1}\), \(\vec{u_2}\), ... \\
+    We can subtract the two terms instead of adding to show that for \( D = A - B \), all eigenvalues are \(\alpha_1 - \beta_1\), \(\alpha_2 - \beta_2\), ... with respective eigenvectors \(\vec{u_1}\), \(\vec{u_2}\), ...
+	\begin{gather*}
+	    (A - \alpha_1 I)\vec{u_1} - (B - \beta_1 I)\vec{u_1}  = 0 \\
+	    (A - B - \alpha_1 I + \beta_1 I)\vec{u_1} = 0 \\
+	    \mathbf{(A - B - (\alpha_1 - \beta_1) I)\vec{u_1} = 0}
+	\end{gather*}
+    Another way to state the definition of eigenvectors and eigenvalues is the following:
+	\begin{gather*}
+	    A\vec{u_1} = \alpha_1 \vec{u_1} \\
+	    B\vec{u_1} = \beta_1 \vec{u_1} 
+	\end{gather*}
+    To find the eigenvalues for a matrix \( E = AB \), we can start with the left side of this equation and try to reach the right side:
+	\begin{gather*}
+	    AB\vec{u_1} \\
+	    A(\beta_1 \vec{u_1}) \\
+	    \beta_1 (A \vec{u_1}) \\
+	    \beta_1 \alpha_1 \vec{u_1}
+	\end{gather*}
+    Therefore, all eigenvalues are \(\alpha_1 \beta_1\), \(\alpha_2 \beta_2\), ... with respective eigenvectors \(\vec{u_1}\), \(\vec{u_2}\), ... \\
+    To adapt to the invertible case, we can develop an equivalent definition for inverse matrices:
+	\begin{gather*}
+	    A\vec{u_1} = \alpha_1 \vec{u_1} \\
+	    \vec{u_1} = A^{-1} \alpha_1 \vec{u_1} \\
+	    \frac{1}{\alpha_1} \vec{u_1} = A^{-1} \vec{u_1}
+	\end{gather*}
+    We can then use the above definition to show for a matrix \( F = A^{-1}B \), the eigenvalues are \(\frac{\beta_1}{\alpha_1}\), \(\frac{\beta_2}{\alpha_2}\), ... with respective eigenvectors \(\vec{u_1}\), \(\vec{u_2}\), ... \\
+	\begin{gather*}
+	    A^{-1} B\vec{u_1} \\
+	    A^{-1} (\beta_1 \vec{u_1}) \\
+	    \beta_1 (A^{-1} \vec{u_1}) \\
+	    \frac{\beta_1}{\alpha_1} \vec{u_1}
+	\end{gather*}
+\end{enumerate}
+
+\section{KNN Classification}
+\begin{center}
+    \begin{tabular}{| c | c | c |} 
+    \hline
+    k & Training Accuracy & Validation Accuracy \\ 
+         \hline
+	1 & 0.777895 & 0.755784 \\
+	\hline
+	3 & 0.831579 & 0.804627 \\
+	\hline
+	5 & 0.866316 & 0.832905 \\
+	\hline
+	7 & 0.884211 & 0.840617 \\
+	\hline
+	\textbf{9} & 0.886316 & \textbf{0.868895} \\
+	\hline
+	11 & 0.890526 & 0.863753 \\
+	\hline
+	13 & 0.884211 & 0.856041 \\
+	\hline
+	15 & 0.870526 & 0.827763 \\
+	\hline
+	17 & 0.858947 & 0.825193 \\
+	\hline
+	19 & 0.852632 & 0.822622 \\
+	\hline
+	21 & 0.853684 & 0.809769 \\
+	\hline
+	23 & 0.845263 & 0.825193 \\
+	\hline
+    \end{tabular}
+\end{center}
+
+The best validation accuracy happens when \textbf{k = 9}, so we use this value to run the KNN algorithm on our test set. The test accuracy with k = 9 is \textbf{0.894602}. \\
+\\ 
+The KNN algorithm was applied on the \textit{boundary.mat} dataset to classify a grid of points in the [0, 1] x [0, 1] range. The results are visualized by the following scatterplots, where the dark areas represent the space classified to the positive class and the white areas represent the space classified to the negative class. \\
+
+\begin{figure}[h!]
+  \caption{Decision Boundary where K = 1}
+  \centering
+    \includegraphics[width=0.5\textwidth]{1k.png}
+\end{figure}
+
+\begin{figure}[h!]
+  \caption{Decision Boundary where K = 5}
+  \centering
+    \includegraphics[width=0.5\textwidth]{5k.png}
+\end{figure}
+
+\begin{figure}[h!]
+  \caption{Decision Boundary where K = 15}
+  \centering
+    \includegraphics[width=0.5\textwidth]{15k.png}
+\end{figure}
+
+\begin{figure}[h!]
+  \caption{Decision Boundary where K = 20}
+  \centering
+    \includegraphics[width=0.5\textwidth]{20k.png}
+\end{figure}
+
+As can be seen, the \textit{smoothness} of the decision boundaries increases with K. This is due to the fact that a larger K forces each point consider a more average range of neighbor classes. Outliers and otherwise insignificant signals are less likely to affect classification if a larger K is used.
+
+\end{document}

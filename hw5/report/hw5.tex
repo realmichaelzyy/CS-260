@@ -1,0 +1,84 @@
+\documentclass[12pt]{article}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+%\usepackage{natbib}
+\renewcommand{\thesubsection}{\alph{subsection}.}
+
+\begin{document}
+\title{Homework \#5}
+\author{Yoav Zimmerman (304125151) \\
+	    CS 260: Machine Learning Algorithms \\
+	   Collaborators: Joey Cox, Andrew Wong}
+\maketitle
+
+\section{Bias-Variance Tradeoff}
+\begin{enumerate}[label=\alph*.]
+	\item TODO:
+\end{enumerate}
+
+\section{Kernelized Perceptron}
+\begin{enumerate}[label=\alph*.]
+	\item For this problem, we apply a non-linear feature mapping $\varphi$ to the Perceptron algorithm, resulting in an update rule of $y = sign(\mathbf{w^T} \varphi(\mathbf{x}))$. Therefore, the update rule for a misclassified $y_n$ is the following:
+	\begin{gather*}
+		\mathbf{w_{i+1}} = \mathbf{w_i} + y_i \varphi(\mathbf{x_i}) \\
+	\end{gather*}
+	If $\mathbf{w}$ is initialized to zeros, then it immediately follows that it is always a linear combination of the non-linear features vectors:
+	\begin{gather*}
+		\mathbf{w} = 0 + y_0 \varphi(\mathbf{x_0}) + y_1 \varphi(\mathbf{x_1}) + \dots \\ 
+		\mathbf{w} = \sum^N_{i}{\alpha_i \, \varphi(\mathbf{x_i})} \\
+	\end{gather*}
+	Where $\alpha_i$ is the number of times that the training example $(\mathbf{x_i}, y_i)$ has been misclassified multiplied by the correct class $y_i$.
+	
+	\item To derive the kernelized form of the prediction rule, we plug the above expression for $\mathbf{w}$ into the prediction function from the regular Perceptron algorithm:
+	\begin{gather*}
+		y_n = sign(\mathbf{w^T} \varphi(\mathbf{x_n})) \\
+		y_n = sign \bigg( \bigg( \sum^N_{i}{\alpha_i \, \varphi(\mathbf{x_i})} \bigg)^T \varphi(\mathbf{x_n}) \bigg) \\ 
+		y_n = sign \bigg( \sum^N_{i}{\alpha_i \, \varphi(\mathbf{x_i})^T \, \varphi(\mathbf{x_n})} \bigg) \\
+		y_n = sign \bigg( \sum^N_{i}{\alpha_i \, K( \mathbf{x_i}, \mathbf{x_n} )} \bigg)
+	\end{gather*}
+	
+	\item Since $\mathbf{w}$ requires the same number of dimensions as the original features, it does not make sense to store it directly when training with the Perceptron algorithm. Instead we can implicitly use it by maintaining $\alpha_i$ throughout the algorithm. We begin by initializing $\alpha_i$ to zeros, then following the following update rule for every misclassified example:
+	\begin{gather*}
+		\alpha_{i+1} = \alpha_i + y_i
+	\end{gather*}
+	The above update rule follows from the following intuition: if $y_n \neq sign \bigg( \sum^N_{i}{\alpha_i \, K( \mathbf{x_i}, \mathbf{x_n} )} \bigg) $,  then 
+	\begin{gather*}
+		y_n \bigg( \sum^N_{i}{\alpha_i \, K( \mathbf{x_i}, \mathbf{x_n} )} \bigg) < 0
+	\end{gather*}
+	We want the above value to be positive to correct the misclassification. Now, let us examine the new value after plugging in the new $\alpha_{i+1}$ above
+	\begin{gather*}
+		y_n \bigg( \sum^N_{i}{(\alpha_i + y_n) K( \mathbf{x_i}, \mathbf{x_n} )} \bigg) \\ 
+		y_n \bigg( \sum^N_{i}{\alpha_i \, K( \mathbf{x_i}, \mathbf{x_n} )} \bigg) + y_n \bigg( \sum^N_{i}{y_n \, K( \mathbf{x_i}, \mathbf{x_n} )} \bigg) \\
+		y_n \bigg( \sum^N_{i}{\alpha_i \, K( \mathbf{x_i}, \mathbf{x_n} )} \bigg) + y_n^2 \bigg( \sum^N_{i}{ K( \mathbf{x_i}, \mathbf{x_n} )} \bigg)
+	\end{gather*}
+	Since the kernel function and $y_n^2$ are always greater than zero, we are adding to the original value of the expression and bringing it closer to or above zero.
+\end{enumerate}
+
+\section{Kernels}
+\begin{enumerate}[label=\alph*.]
+	\item TODO:
+\end{enumerate}
+
+\section{Soft Margin Hyperplanes}
+\begin{enumerate}[label=\alph*.]
+	\item In the following problem, we consider the following formulation of the SVM optimization problem:
+	\begin{equation*}
+	\begin{aligned}
+	& \underset{w, b, \xi}{\text{min}}
+	& & \frac{1}{2} \lVert w \rVert^2_2 + C \sum^N{\xi_n^p} \\
+	& \text{subject to}
+	& & y_n(w^T \phi(x_n) + b) \geq 1 - \xi_n
+	\end{aligned}
+	\end{equation*}
+	
+	Note that when $p = 1$, the third term in the dual formulation drops out and we're left with the original dual formulation for an SVM.
+	
+	\item The dual formulation for this more general case is more complex. With $p = 1$, the function to optimize over only has two terms, while in the more general case it has three.
+\end{enumerate}
+
+%\bibliographystyle{plain}
+%\bibliography{refs}
+
+\end{document}

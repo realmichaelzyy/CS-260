@@ -1,0 +1,268 @@
+\documentclass[12pt]{article}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\renewcommand{\thesubsection}{\alph{subsection}.}
+
+\begin{document}
+\title{Homework \#1}
+\author{Yoav Zimmerman (304125151) \\
+	   Collaborators: Joey Cox, Mark Ketenjian}
+\maketitle
+
+\section{Naive Bayes}
+\begin{enumerate}[label=\alph*.]
+    \item 
+	First we begin with Bayes Rule:
+	\begin{gather*}
+	    P(Y=1 | X) = \frac{P(X_d | Y=1)P(Y=1)}{P(X_d | Y=1)P(Y=1) + P(X_d | Y=0)P(Y=0)} \\
+	    P(Y=1 | X) = \cfrac{1}{1 + \cfrac{P(X_d | Y=0)P(Y=0)}{P(X_d | Y=1)P(Y=1)}} \\
+	\end{gather*}
+	Now we have an equation for which we can substitute \( P(Y=1) = \pi \) and the gaussian distribution for \( P(X_d | Y = k) \). After plugging these terms in and some algebraic manipulation, we reach a desirable form
+	\begin{gather*}
+	    P(Y=1 | X) = \frac{1}{1 + exp(ln(\cfrac{1 - \pi}{1}) + \sum_j{\cfrac{\mu_{1j}^2 - \mu_{0j}^2}{2 \sigma_j^2}} + \sum_j{\cfrac{\mu_{0j} - \mu_{1j}}{\sigma_j^2}x_i})} \\
+	\end{gather*}
+	As can be seen by the above equation, this can be expressed in the form $ \cfrac{1}{1 + exp(-\omega_0 + \mathbf{\omega^T X})} $, where 
+	\begin{gather*}
+	    \omega_0 = -ln(\cfrac{1 - \pi}{1}) - \sum_j{\cfrac{\mu_{1j}^2 - \mu_{0j}^2}{2 \sigma_j^2}} \\
+	    \mathbf{\omega} = \cfrac{\mu_{0j} - \mu_{1j}}{\sigma_j^2}
+	\end{gather*}
+    \item
+	First, we begin with the Naive Bayes model definition of joint distribution
+	\begin{gather*}
+	    P(X = x, Y = k) = P(Y = k) \prod_{j=1}^{J}{P(X_j = x_j | Y =k)}
+	\end{gather*}
+	We have the assumption that each feature \(X_j\) follows a Gaussian distribution and the assumption that the prior \( P(Y = c) = \pi_c \). We can plug these into the Naive Bayes definition to get:
+	\begin{gather*}
+	    P(X = x, Y = k) = \pi_k \prod_{j=1}^{J}{\frac{1}{\sigma_j \sqrt{2 \pi}}\, exp(\cfrac{(x_j - \mu_{jk})^2}{2 \sigma_j^2})}
+	\end{gather*}
+	Given a training set \( T \) containing \( N \) examples, we compute the log-likelihood as the following:
+	\begin{gather*}
+		\mathcal{L} = ln(P(D)) = ln \prod_{n=1}^{N}{ P(x_n, y_n) } \\
+		\mathcal{L} = ln \prod_{n=1}^{N}{ \pi_{y_n} \prod_{j=1}^{J}{\frac{1}{\sigma_j \sqrt{2 \pi}}\, exp(\cfrac{(x_j - \mu_{jy_n})^2}{2 \sigma_j^2})} } \\
+	\end{gather*}
+	After distributing the logs into the products to make them sums and some algebraic manipulation, we reach the form:
+	\begin{gather*}
+		\mathcal{L} = \sum_k{\sum_{n:y_n = k}{ln \pi_{k}}} + \sum_k{\sum_{n:y_n = k}{\sum_j{{\bigg( ln(\cfrac{1}{\sigma_j \sqrt{2 \pi}}) - \cfrac{(x_j - \mu_{jk})^2}{2\sigma_j^2} \bigg) }}}}
+	\end{gather*}
+	The form above is nice, because we can optimize \( \pi_{c} \) term seperately from $\sigma_j$ and $\mu_{jk}$ term. Estimating $\pi_{c}$ is equivalent multinomial distribution case for Naive Bayes, taught in Lecture 4:
+	\begin{gather*}
+		\pi_c^* = \frac{\sum_n{[y_n = c]}}{N}
+	\end{gather*}
+	To find the MLE estimation for $\mu_{jk}$, we can take the first order derivative of the likelihood function with respect to it and equate it to 0. If we hold $j$ and $k$ constant (imagine computing every $\mu_{jk}$ seperately, we find that two of the three sums drop out:
+	\begin{gather*}
+		\frac{\partial}{\partial \mu_{jk}} \mathcal{L} = 0 \\
+		\sum_{n:y_n = k}{\cfrac{x_j - \mu_{jk} }{\sigma_j^2}} = 0 \\ 
+		\sum_{n:y_n = k}{x_j - \mu_{jk}} = 0 \\ 
+		(\sum_{n:y_n = k}{x_j}) - N_k \mu_{jk} = 0 \\ 
+		\mu_{jk} = \frac{\sum_n{x_j}}{N_k}
+	\end{gather*}
+	$N_k$ in the above equation represents the number of training examples with a label of class k. We follow the same process to find the MLE estimation for $\sigma_j$. Since this term only relies on the feature $j$, only the innermost sum drops out:
+	\begin{gather*}
+		\frac{\partial}{\partial \sigma_j}\mathcal{L} = 0 \\
+		\sum_{k}{\sum_{n:y_n = k}{\cfrac{(x_j - \mu_{jk})^2}{\sigma_j^2} - 1}} = 0 \\
+		\sum_{k}{\sum_{n:y_n = k}{\cfrac{(x_j - \mu_{jk})^2}{\sigma_j^2}}} = N \\ 
+		\sigma_j = \sqrt{\cfrac{\sum_{k}{\sum_{n:y_n = k}{(x_j - \mu_{jk})^2}}}{N}} 
+	\end{gather*}
+	where $N$ in the above equation is the total number of training examples.
+\end{enumerate}
+
+\section{Convex Functions and Information Theory}
+\begin{enumerate}[label=\alph*.]
+    \item 
+	\begin{gather*}
+		\mathcal{E} (\omega) =  - \sum_n{y_n log(\sigma(\omega^T \, x_n)) + (1 - y_n)log(1 - \sigma(\omega^T \, x_n))}
+	\end{gather*}
+    \item
+	In general, to prove a function $f(x)$ is convex, one can show that the second derivative $f''(x)$ is greater than 0 for all $x$. The analog for the loss function above would be to show that its Hessian matrix, $ \frac{ \partial \mathcal{E}^2 }{ \partial \omega \partial \omega^T }  $, is positive semidefinite. We begin with the gradient $ \nabla \mathcal{E} $ and calculate the Hessian matrix as follows:
+	\begin{gather*}
+		\frac{ \partial \mathcal{E}^2 }{ \partial \omega \partial \omega^T } =  \frac{\partial}{\partial \omega} \nabla \mathcal{E} = \frac{\partial}{\partial \omega} \sum_N{(\sigma(w^T \, \vec{x}_n) - y_n)\vec{x}_n} \\
+		\frac{ \partial \mathcal{E}^2 }{ \partial \omega \partial \omega^T } =  \sum_N{(\sigma(w^T \, \vec{x}_n)(1 - \sigma(w^T \, \vec{x}_n))\vec{x}_n}\vec{x}_n^T \\
+	\end{gather*}
+	Next, we show that the Hessian matrix derived above is positive semidefinite. Recall that for a matrix $H$ to be positive semidefinite, the inequality $ \vec{v}^TH\vec{v} $ must hold for every vector $\vec{v}$.
+	\begin{gather*}
+		\vec{v}^T (\sum_N{(\sigma(w^T \, \vec{x}_n)(1 - \sigma(w^T \, \vec{x}_n))\vec{x}_n}\vec{x}_n^T) \vec{v} \geq 0 \\
+	\end{gather*}
+	Let's examine a single term of this sum by holding N constant:
+	\begin{gather*}
+		\vec{v}^T ((\sigma(w^T \, \vec{x}_n)(1 - \sigma(w^T \, \vec{x}_n)) \vec{x}_n \vec{x}_n^T) \vec{v} \geq 0 \\
+		(\sigma(w^T \, \vec{x}_n)(1 - \sigma(w^T \, \vec{x}_n))) \vec{v}^T  \vec{x}_n \vec{x}_n^T \vec{v} \geq 0 \\
+		(\sigma(w^T \, \vec{x}_n)(1 - \sigma(w^T \, \vec{x}_n))) \lVert \vec{v}^T \vec{x}_n \rVert^2 \geq 0 \\
+	\end{gather*}
+	We know that $ \lVert \vec{v}^T \vec{x}_n \rVert^2 \geq 0 $ since squares are always positive. We also know $ (\sigma(w^T \, \vec{x}_n)(1 - \sigma(w^T \, \vec{x}_n))) \geq 0 $ because the sigmoid function will always be between 0 and 1. Therefore the above inequality is true, the Hessian is positive semidefinite, and the \textbf{loss function is convex}.
+
+    \item
+	To show that the optimal $\omega$ goes to $\infty$, we examine the derivative with respect to $\omega$ of the loss function:
+	\begin{gather*}
+		\sum_N{ (\sigma(\omega^T \, \vec{x}_n) - y_n)\vec{x}_n}
+	\end{gather*}
+	If the training data is linearly seperable, then there exists some line that perfectly seperates all training examples  from different classes. In other words, it is possible to find an optimal $\omega$ such that $\sigma(\omega^T \, \vec{x}_n) = y_n$ for every $n$. In this case, the above expression is set to zero to find a critical point, which occurs when $\omega \rightarrow \infty$. This problem can be avoided by adding a regularization term, as shown in the next exercise.
+
+    \item 
+	\begin{gather*}
+		\frac{\partial}{\partial w_i} \bigg( -log \bigg( \prod_{i=1}^{n}{p(Y = y_i | X = x)} \bigg) + \lambda \lVert \mathbf{w} \rVert_2^2 \bigg) \\
+		\sum_N{\bigg( \sigma(w^T \, \vec{x}_n) - y_n)\vec{x}_n \bigg)} + 2 \lambda \sum_i{w_i} \\
+	\end{gather*}
+
+    \item
+	To prove the loss with regularization has a unique solution, we can prove that the function is convex. To prove that the function is convex, you can show that it's second derivative is positive (or the Hessian is positive semidefinite). By observation, we see the loss function with regularization breaks down into two terms: the loss function we proved is convex in 2b) and the regularization term $ \lambda \lVert \mathbf{w} \rVert_2^2 $. The regularization term is a paraboloid, which is strictly convex (meaning it is convex with a unique solution at the minimum paraboloid point). Therefore, the entire loss function is the sum of a convex function and a strictly convex function, implying the entire loss function is a strictly convex function and has a unique solution.
+	
+\end{enumerate}
+
+\section{Decision Trees}
+\begin{enumerate}[label=\alph*.]
+    \item 
+	To determine the maximum possible information gain, we compute information gain of splitting each of the two features and compare those values. The formula for information gain is
+	\begin{gather*}
+		IG(X) = -H(X) = - \sum_K{P(X = k) \, log P(X = k)}
+	\end{gather*}
+	By observation, we see that if we split on the Traffic feature, we also perfectly seperate our data training examples into uniform classes. That is, for all $k$:
+	\begin{gather*}
+		P(X = k) = 1 \\ 
+		-H_{traffic} = - \sum_K{ 1 \, log(1) } = 0
+	\end{gather*}
+	The above information gain is the maximum possible and equivalently the smallest entropy possible. By observation, we see that splitting on the Weather feature still results in $ P(X = k) < 1 $ for some $k$. Therefore, the predictor variable to maximize information gain is \textbf{Traffic}.
+
+    \item
+	The second student applies a linear function to each of the features, which does not change their relative ordering and results in equivalent decision trees $ T_1 $ and $ T_2 $. For an intuitive explanation, consider the possible splits that can result on each feature. These splits are going to be the same between the raw features and normalized features, no matter what linear function was applied to them. Since the splits are the same, the resulting probabilities and information gain is equivalent, which results in an equivalent decision tree being constructed. 
+
+     \item
+	\begin{gather*}
+		\sum_{k = 1}^{K}{p_k(1 - p_k)} \leq - \sum_{k = 1}^{K}{p_k ln(p_k)}
+	\end{gather*}
+	To prove the above inequality, we can unroll the sums and prove the inequality for each $k$ term on both sides. Concretely, for all $0 \leq p_k \leq 1$ we need to prove that:
+	\begin{gather*}
+		p_k(1 - p_k) \leq - p_k ln(p_k)    
+	\end{gather*}
+	To do this, let us consider a function $p(x) = 1 - x + ln(x)$ over the interval [0, 1]. We take a derivative to find it's maximum at $p(1) = 0$.
+	\begin{gather*}
+		p'(x) = -1 + \frac{1}{x} = 0 \\
+		\frac{1}{x} = 1 \\
+		x = 1
+	\end{gather*}
+	Since, we know the maximum is 0 at $p(1)$, we know the rest of the function must be less than 0, so $p(x) \leq 0$ for the interval [0, 1]. Rearranging this inequality, we get:
+	\begin{gather*}
+		1 - x + ln(x) \leq 0 \\
+		1 - x \leq -ln(x) \\
+		x(1 - x) \leq -x \, ln(x) 
+	\end{gather*}
+	for all $0 \leq x \leq 1$. This is identical to the inequality we set out to prove above, since we know that every $p_k$ is a probability and must fall in the interval [0, 1].
+\end{enumerate}
+
+\section{KNN Classification}
+In this problem, we compare the performance of four machine learning algorithms on the same dataset.
+
+\subsection{K-Nearest Neighbors}
+\begin{center}
+    \begin{tabular}{| c | c | c | c |} 
+    \hline
+    k & Training Accuracy & Validation Accuracy & Test Accuracy \\ 
+	\hline
+	1 & 0.777895 & 0.755784 & 0.755784 \\
+	\hline
+	3 & 0.831579 & 0.804627 & 0.804627 \\
+	\hline
+	5 & 0.866316 & 0.832905 & 0.832905 \\
+	\hline
+	7 & 0.884211 & 0.840617 & 0.840617 \\
+	\hline
+	9 & 0.886316 & 0.868895 & 0.868895 \\
+	\hline 
+	11 & 0.890526 & 0.863753 & 0.863753 \\
+	\hline
+	13 & 0.884211 & 0.856041 & 0.856041 \\
+	\hline
+	15 & 0.870526 & 0.827763 & 0.827763 \\
+	\hline
+	17 & 0.858947 & 0.825193 & 0.825193 \\ 
+	\hline
+	19 & 0.852632 & 0.822622 & 0.822622 \\
+	\hline
+	21 & 0.853684 & 0.809769 & 0.809769 \\
+	\hline
+	23 & 0.845263 & 0.825193 & 0.825193 \\
+	\hline
+    \end{tabular}
+\end{center}
+
+As discussed last week, K-Nearest Neighbors performs best on this algorithm when using the 9 nearest neighbors, which performed with an 86.9\% precision on the test dataset. This precision of the KNN algorithm is the second worst for the set of four algorithms examined on this dataset. The classification time computational cost of KNN is also very expensive, since you need to go through all training samples. On the upside, there is no computation needed to "train a model" as in the other algorithms.
+
+\subsection{Decision Trees}
+\begin{center}
+    \begin{tabular}{| c | c | c | c | c |} 
+    \hline
+    Criterion & Min Leaf Size & Training Accuracy & Validation Accuracy & Test Accuracy \\ 
+	\hline \hline
+	gdi & 1 & \textbf{0.970526} & \textbf{0.946015} & \textbf{0.946015} \\
+	\hline
+	gdi & 2 & \textbf{0.970526} & \textbf{0.946015} & \textbf{0.946015} \\
+	\hline
+	gdi & 3 & 0.968421 & 0.935733 & 0.940874 \\
+	\hline
+	gdi & 4 & 0.963158 & 0.928021 & 0.930591 \\
+	\hline
+	gdi & 5 & 0.960000 & 0.922879 & 0.933162 \\
+	\hline
+	gdi & 6 & 0.953684 & 0.938303 & 0.922879 \\
+	\hline
+	gdi & 7 & 0.945263 & 0.928021 & 0.910026 \\
+	\hline
+	gdi & 8 & 0.941053 & 0.925450 & 0.912596 \\
+	\hline
+	gdi & 9 & 0.930526 & 0.922879 & 0.907455 \\
+	\hline
+	gdi & 10 & 0.927368 & 0.904884 & 0.907455 \\
+	\hline \hline
+	deviance & 1 & 0.966316 & 0.928021 & 0.946015 \\
+	\hline
+	deviance & 2 & 0.966316 & 0.928021 & 0.946015 \\
+	\hline
+	deviance & 3 & 0.964211 & 0.917738 & 0.940874 \\
+	\hline
+	deviance & 4 & 0.964211 & 0.917738 & 0.940874 \\
+	\hline
+	deviance & 5 & 0.964211 & 0.917738 & 0.940874 \\
+	\hline
+	deviance & 6 & 0.962105 & 0.930591 & 0.938303 \\
+	\hline
+	deviance & 7 & 0.951579 & 0.925450 & 0.925450 \\
+	\hline
+	deviance & 8 & 0.944211 & 0.917738 & 0.922879 \\
+	\hline
+	deviance & 9 & 0.933684 & 0.920308 & 0.910026 \\
+	\hline
+	deviance & 10 & 0.928421 & 0.902314 & 0.915167 \\
+	\hline
+    \end{tabular}
+\end{center}
+
+The Decision Tree algorithm was extremely close to being the best performer on this dataset, achieving an impressive 94.60\% precision on the test dataset, losing by only 0.08\% to logistic regression. For both splitting criterion, the lower minimum leaf sizes achieved higher accuracies. Usually, a low minimum leaf size has the danger of overfitting the tree to the training set, but on this dataset this did not seem to be a problem. The two splitting criterion had near identical performance on this dataset, with the best test accuracy on both tieing exactly; it is not clear if one is a better choice over the other.
+
+\subsection{Naive Bayes}
+\begin{center}
+    \begin{tabular}{| c | c | c |} 
+    \hline
+    Training Accuracy & Validation Accuracy & Test Accuracy \\ 
+	\hline \hline
+	0.8516 & 0.8098 & 0.8355 \\
+	\hline
+    \end{tabular}
+\end{center}
+
+Naive Bayes with a Bernoulli distribution was the weakest performing algorithm analyzed this week, achieving a 83.55\% precision on the test dataset. This is likely due to the strong assumption that Naive Bayes makes: that features are conditionally indepedent from one other. This is not true in most real world datasets and likely not true in this dataset as well, leading to a poor performance.
+
+\subsection{Logistic Regression}
+\begin{center}
+    \begin{tabular}{| c | c | c |} 
+    \hline
+    Training Accuracy & Validation Accuracy & Test Accuracy \\ 
+	\hline \hline
+	0.9453 & 0.8278 & 0.9468 \\
+	\hline
+    \end{tabular}
+\end{center}
+
+Multinomial Logistic Regression was the best performing algorithm analyzed this week, achieving a 94.68\% precision on the test dataset and beating out Decision Tree's by a slim 0.08\%. For a real world application on this dataset, this algorithm would be the best choice for (1) precision performance and (2) computational performance after training the model is effectively constant time with a relatively low number of features. An added bonus to the mnrfit function in MATLAB is that there are very few hyperparameters to experiment with, unlike Decision Trees.
+
+\end{document}

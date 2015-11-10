@@ -7,7 +7,6 @@
 
 octave-workspace
 *.aux
-*.tex
 *.log
 *.gz
 

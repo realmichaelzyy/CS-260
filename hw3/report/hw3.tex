@@ -1,0 +1,278 @@
+\documentclass[12pt]{article}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\renewcommand{\thesubsection}{\alph{subsection}.}
+
+\begin{document}
+\title{Homework \#3}
+\author{Yoav Zimmerman (304125151) \\
+	    CS 260: Machine Learning Algorithms \\
+	   Collaborators: Joey Cox, Andrew Wong}
+\maketitle
+
+\section{Feature Representation}
+\begin{enumerate}[label=\alph*.]
+    \item The following are the top three words that appear the most frequently, with their occurrences: \\
+    \begin{center}
+	{('enron', 900), ('will', 686), ('deal', 476)}
+    \end{center} 
+\end{enumerate}
+
+\section{Gradient Descent}
+\begin{enumerate}[label=\alph*.]
+	\item For iterative gradient descent, we want to continuously update our weight vector in the opposite direction of the derivative of the loss function w.r.t $w$. 
+	\begin{gather*}
+		\mathbf{w}^{t+1} \leftarrow \mathbf{w}^{t} - \eta \, \frac{\partial}{\partial w} \mathcal{E} \\
+		\mathbf{w}^{t+1} \leftarrow \mathbf{w}^{t} - \eta \, \sum_N{(\sigma(b + \mathbf{w^T x_n}) - y_n) \mathbf{x_n}} \\
+	\end{gather*}
+	For the update of the bias term $b$, we do the same as above but taking the derivative of the loss function w.r.t to the bias term:
+	\begin{gather*}
+		b^{t+1} \leftarrow b^t - \eta \, \frac{\partial}{\partial b} \mathcal{E} \\
+		b^{t+1} \leftarrow b^t - \eta \, \sum_N{(\sigma(b + \mathbf{w^T x_n}) - y_n)} \\
+	\end{gather*}
+	If adding the regularization term $\lambda \lVert \mathbf{w} \rVert_2^2$ in the cross entropy function, the weight vector update formula becomes:
+	\begin{gather*}
+		\mathbf{w}^{t+1} \leftarrow \mathbf{w}^{t} - \eta \bigg( \sum_N{ (\sigma(b + \mathbf{w^T x_n}) - y_n) \mathbf{x_n}}\bigg) - \eta 2 \lambda \lVert \mathbf{w} \rVert_2 
+	\end{gather*}
+	Since the regularization term does not include $b$, the update formula for the bias term is the same as it is without regularization above.
+
+	\item The following plots show the cross-entropy function \textbf{without regularization} across 50 logistic regression iterations for the step sizes of 0.001, 0.01, 0.05, 0.1, and 0.5.  
+
+	\begin{figure}[bp!]
+	  \caption{EmailSpam Logistic Regression without Regularization}
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{emailspam_grad.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \caption{Ionosphere Logistic Regression without Regularization}
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{ion_grad.png}
+	\end{figure}
+
+	Without a regularization term, the weights learned by logistic regression are in danger of growing out of control, especially with a large step size. The following table shows the L2 norms of the weights learned by logistic regression for the specified step sizes.
+
+	\begin{center}
+	\begin{tabular}{| c | c | c | c | c | c |} 
+		\hline
+	    	L2 Norm & 0.001 & 0.01 & 0.05 & 0.1 & 0.5 \\ 
+		\hline \hline
+		Email & 28.1356 & 26.4753 & 28.1592 & 30.6376 & 291.8548 \\
+		\hline
+		Ionosphere & 3.2244 & 4.7505 & 20.0276 & 37.3257 & 169.6676 \\	
+		\hline
+	    \end{tabular}
+	\end{center}
+
+	\item Next, we plot the same cross-entropy function across 50 logistic regression iterations for several step sizes \textbf{with regularization}:
+
+	\begin{figure}[bp!]
+	  \caption{EmailSpam Logistic Regression with Regularization}
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{emailspam_grad_reg.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \caption{Ionosphere Logistic Regression with Regularization}
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{ion_grad_reg.png}
+	\end{figure}
+
+	With the regularization term added into cross-entropy, the weights are much smaller after 50 iterations of learning. As one increases the regularization coeffecient, the weights grow smaller but the fail to fit the training set correctly. This tradeoff can be visualized in the following table which shows the L2 norm of learned weights after 50 iterations with a step size of 0.01 and varying regularization coeffecients:
+
+	\begin{center}
+	\begin{tabular}{| c | c | c |} 
+		\hline
+	    	$\lambda$ & EmailSpam L2 Norm & Ionosphere L2 Norm \\
+		\hline \hline
+		0.00 & 26.4753 & 4.7505 \\
+		\hline
+		0.05 & 2.5653 & 1.5939 \\
+		\hline
+		0.10 & 1.7633 & 1.3803 \\
+		\hline
+		0.15 & 1.3493 & 1.1453 \\
+		\hline
+		0.20 & 1.0708 & 0.9581 \\
+		\hline
+		0.25 & 0.8577 & 0.3910 \\
+		\hline
+		0.30 & 0.6806 & 0.3611 \\
+		\hline
+		0.35 & 0.5233 & 0.3054 \\
+		\hline
+		0.40 & 0.3746 & 0.2210 \\
+		\hline
+		0.45 & 0.2205 & 0.1267 \\
+		\hline
+		0.50 & 0.0000 & 0.0000 \\
+		\hline
+	    \end{tabular}
+	\end{center}
+
+	\item To understand the effect of regularization coeffecient on performance, we can plot cross-entropy after 50 iterations of gradient descent against the value of $\lambda$. For each dataset (on both training and testing), we generate this plot for five different step sizes, for a total of 10 plots:
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{email_reg_1.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{email_reg_2.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{email_reg_3.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{email_reg_4.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{email_reg_5.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{ion_reg_1.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{ion_reg_2.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{ion_reg_3.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{ion_reg_4.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{ion_reg_5.png}
+	\end{figure}
+
+	Especially for the smaller step sizes, the figures clearly show the tradeoff between regularization coeffecient and cross-entropy fit.
+
+\end{enumerate}
+
+\section{Newton's Method}
+\begin{enumerate}[label=\alph*.]
+
+	\item Newton's Method is an iterative approximation method using a second order taylor expansion. Generally, to iteratively minimize a variable $x$ over a function $f(x)$, we follow the following update rule:
+
+	\begin{gather*}
+		x_{n+1} = x_n - \cfrac{f'(x)}{f''(x)}
+	\end{gather*}
+
+	Applied to the negative log-likelihood function with respect to weights $w$, the update rule looks like the following: 
+
+	\begin{gather*}
+		\mathbf{w}^{t+1} \leftarrow \mathbf{w}^t - \big( H^{(t)} \big)^{-1} \nabla \mathcal{E}(\mathbf{w}^t)
+	\end{gather*}
+	
+	where $\nabla \mathcal{E}(\mathbf{w}^t)$ is the gradient of the cross-entropy function with respect to weights $w$ and $\big( H^{(t)} \big)$ is the Hessian matrix with respect to weights $w$. The following are their values that are plugged into the function above to arrive at the update rule
+
+	\begin{gather*}
+		H^{(t)} = \sum_N{\sigma(b + \mathbf{w^T \, \vec{x}_n})(1 - \sigma(b + \mathbf{w^T \, \vec{x}_n})\mathbf{\vec{x}_n}}\mathbf{\vec{x}_n^T}  \\
+		\nabla \mathcal{E}(\mathbf{w}^t) = \sum_N{(\sigma(b + \mathbf{w^T x_n}) - y_n) \mathbf{x_n}} \\
+	\end{gather*}
+
+	Including the regularization term in the cross-entropy function, the values of the Hessian and the gradient of the cross-entropy function are the following:
+
+	\begin{gather*}
+		H^{(t)} = \sum_N{ \bigg( \sigma(b + \mathbf{w^T \, \vec{x}_n})(1 - \sigma(b + \mathbf{w^T \, \vec{x}_n})\mathbf{\vec{x}_n}}\mathbf{\vec{x}_n^T} \bigg) + 2 \lambda I  \\
+		\nabla \mathcal{E}(b, \mathbf{w}^t) = \sum_N{ \bigg( ( \sigma(b + \mathbf{w^T x_n}) - y_n) \mathbf{x_n} \bigg) + 2 \lambda \lVert \mathbf{w} \rVert_2  }
+	\end{gather*}
+
+	To update the bias variable $b$, we apply the update rule again but take the derivatives of the cross-entropy function with respect to $b$
+
+	\begin{gather*}
+		b_{t+1} \leftarrow b_t - \cfrac{\sum_n{\bigg( \sigma(b + \mathbf{w^T x_n}) - y_n} \bigg) }{\sum_n{ \bigg( \sigma(b + \mathbf{w^T x_n}) ( 1 - \sigma(b + \mathbf{w^T x_n}) ) \bigg) }}
+	\end{gather*}
+
+	As in the case of logistic regression, the regularization term does not depend on $b$ and therefore does not affect the update rule for $b$.
+
+	\item The above update rules were implemented and Newton's Method optimization was run on the Ionosphere and EmailSpam datasets for 50 iterations. The following plots graph cross-entropy value against iteration number:
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{emailspam_newtons_iterations.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{ion_newtons_iterations.png}
+	\end{figure}
+
+	The L2 Norm of the weights learned is \textbf{11.6817} for the Ionosphere data set and \textbf{554.6092} for the EmailSpam dataset. The cross-entropy of the learned weights on the test data sets is \textbf{40.1266} for Ionosphere and \textbf{3744.52} for the EmailSpam dataset. This points towards evidence of overfitting, especially on the EmailSpam dataset. 
+
+	\item To remedy this overfitting, we introduce the regularization term into the cross-entropy function. The following plots graph the training cross-entropy value after 50 iterations against the regularization coeffecient value for both datasets in training and test data.
+	
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{email_newtons_reg.png}
+	\end{figure}
+
+	\begin{figure}[bp!]
+	  \centering
+	    \includegraphics[width=0.75\textwidth]{ion_newtons_reg.png}
+	\end{figure}
+
+	The following table shows the L2 norm of the learned weights on the training datasets and the resulting cross-entropy value after 50 iterations for different values of regularization coefficients:
+
+	\begin{center}
+	\begin{tabular}{| c | c | c | c | c |}
+		\hline
+		  & \textbf{EmailSpam} &   & \textbf{Ionosphere} &  \\
+		\hline
+	    	$\lambda$ & L2 Norm & Cross-Entropy & L2 Norm & Cross-Entropy \\
+		\hline \hline
+		0 & 554.609245 & 3744.516447 & 11.681734 & 40.126691 \\
+		\hline
+		5.000000e-02 & 14.164955 & 99.615610 & 8.570201 & 29.231057 \\
+		\hline
+		1.000000e-01 & 11.591894 & 95.108187 & 7.291405 & 25.861919 \\
+		\hline
+		1.500000e-01 & 10.211186 & 94.003427 & 6.542856 & 24.614067 \\
+		\hline
+		2.000000e-01 & 9.295419 & 93.971149 & 6.033473 & 24.138970 \\
+		\hline
+		2.500000e-01 & 8.623578 & 94.375120 & 5.655605 & 23.971486 \\
+		\hline
+		3.000000e-01 & 8.100153 & 94.975930 & 5.359206 & 23.940732 \\
+		\hline
+		3.500000e-01 & 7.675632 & 95.667638 & 5.117483 & 23.976388 \\
+		\hline
+		4.000000e-01 & 7.321239 & 96.398574 & 4.914624 & 24.046118 \\
+		\hline
+		4.500000e-01 & 7.018867 & 97.141974 & 4.740609 & 24.133710 \\
+		\hline
+		5.000000e-01 & 6.756436 & 97.883488 & 4.588732 & 24.230511 \\
+		\hline
+	    \end{tabular}
+	\end{center}
+
+\end{enumerate}
+
+\section{Analysis}
+\begin{enumerate}[label=\alph*.]
+	\item In gradient descent, the larger the step size the faster the cross-entropy value will converge. But if the step size is too large, the cross-entropy will never converge- this happens in Ionosphere classification with a step size of 0.1 or greater. When introducing regularization, the L2 norms of the learned weights are lower, as would be expected, but this comes at a sacrifice to the cross-entropy fit. The higher the regularization coefficient, the larger the cross-entropy error will be on the training data. But on the test data, a regularization coeffecient will improve overfitting and give a lower cross-entropy error - for a good example see the EmailSpam graph of cross entropy plotted against regularization coefficient with a step size of 0.05.
+
+	\item There are two main differences between Newton's Method and Gradient Descent. The first is the convergence time; Newton's Method converges much faster than Gradient Descent because it uses a second-order approximation on each iteration, which is more accurate than Gradient Descents first order approximation. The second is computation time; Newton's Method is much slower than Gradient Descent, mainly because of the computation requiring inversing the Hessian Matrix. Especially in learning problems with a large amount of features, such as in the EmailSpam dataset, inverting a $D x D$ matrix is very costly and prevents Newton's Method from being used in practice too often. 
+
+\end{enumerate}
+
+\end{document}
