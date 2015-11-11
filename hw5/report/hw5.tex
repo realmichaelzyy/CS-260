@@ -10,11 +10,32 @@
 \title{Homework \#5}
 \author{Yoav Zimmerman (304125151) \\
 	    CS 260: Machine Learning Algorithms \\
-	   Collaborators: Joey Cox, Andrew Wong}
+	   Collaborators: Hannah Jin, Andrew Wong}
 \maketitle
 
 \section{Bias-Variance Tradeoff}
 \begin{enumerate}[label=\alph*.]
+	\item The closed form of the weights for regularized linear regression takes the following form (derived in previous homeworks and lecture): 
+	\begin{gather*}
+		\beta_\lambda = (\mathbf{X^T X} + \lambda \mathbf{I})^{-1}  \mathbf{X^T y}
+	\end{gather*}
+	The training labels $\mathbf{y}$ has a gaussian distribution of $\mathcal{N}( \mathbf{X \beta^*}, \mathbf{\Sigma_\epsilon})$ from the definition of the linear model. We can this distribution and the properites of an affine transformation of a gaussian random variable to find the distribution of $\beta_\lambda$. 
+	\begin{gather*}
+		\beta_\lambda \sim \mathcal{N}( \mathbf{M_\lambda X \beta^*}, \mathbf{M \Sigma_\epsilon M^T}) \\
+		\text{where } \mathbf{M_\lambda} = (\mathbf{X^T X} + \lambda \mathbf{I})^{-1}  \mathbf{X^T}
+	\end{gather*}
+	
+	\item Next, we can calculate the bias term $\mathbb{E}[\mathbf{x^T} \beta_\lambda] - \mathbf{x^T} \beta^*$ as a function of $\lambda$ and a fixed test point \textbf{x}.
+	\begin{gather*}
+		Bias(\lambda) = \mathbb{E}[\mathbf{x^T} \beta_\lambda] - \mathbf{x^T} \beta^* \\
+		Bias(\lambda) = \mathbf{x^T} \mathbb{E}[\beta_\lambda] - \mathbf{x^T} \beta^* \\
+		Bias(\lambda) = \mathbf{x^T}  \mathbf{M_\lambda X \beta^*} - \mathbf{x^T} \beta^* \\
+		Bias(\lambda) = \mathbf{x^T} ( \mathbf{M_\lambda X} - \mathbf{I} ) \beta^* \\
+		\text{where } \mathbf{M_\lambda } = (\mathbf{X^T X} + \lambda \mathbf{I})^{-1}  \mathbf{X^T}
+	\end{gather*}
+	
+	\item TODO:
+
 	\item TODO:
 \end{enumerate}
 
@@ -58,6 +79,16 @@
 
 \section{Kernels}
 \begin{enumerate}[label=\alph*.]
+	\item Consider a kernel $K_3 = \alpha_1 K_1 + \alpha_2 K_2$ where $K_1$ and $K_2$ are kernel matrices and $\alpha_1 , \alpha_2 \geq 0$. To show that $K_3$ is also a valid kernel, we show that it is positive semidefinite:
+	\begin{gather*}
+		x^T K_3 x \geq 0 \\
+		x^T ( \alpha_1 K_1 + \alpha_2 K_2 ) x \geq 0 \\
+		x^T \alpha_1 K_1  x  + x^T \alpha_2 K_2  x \geq 0 \\
+	\end{gather*}
+	Since  $K_1$ and $K_2$ are positive semidefinite, both terms above are positive, therefore $K_3$ is also positive semidefinite and a kernel matrix.
+	
+	\item TODO:
+	
 	\item TODO:
 \end{enumerate}
 
@@ -73,9 +104,60 @@
 	\end{aligned}
 	\end{equation*}
 	
+	To derive the dual formulation, we write out the langragian and take derivatives with respect to the optimization variables $w$, $\beta$, and $\xi$.
+	
+	\begin{gather*}
+		L(w, b, \{ \xi_n \}, \{ \alpha_n \}, \{ \lambda_n \}) = C \sum_n{\xi_n^p} + \frac{1}{2} \lVert w \rVert^2_2 - \sum_n{\lambda_n \, \xi_n} \\
+										 + \sum_n{ \bigg( \alpha_n \big( 1 - y_n(w^T \phi(x_n) + b) - \xi_n \big)  \bigg) } 
+	\end{gather*}
+	
+	The partial derivatives with respect to $w$ and $\beta$ are the same as they are with in the standard SVM dual formulation (in the lecture slides), the only partial derivative that is affected by our change is that of $\xi$.
+	
+	\begin{gather*}
+		\frac{ \partial }{ \partial \xi_n } L = 0 \\
+		Cp\xi_n^{p-1} - \lambda_n - \alpha_n = 0
+	\end{gather*}
+	
+	When plugging in this system of partial derivatives back into the langragian, we are left with the following dual formulation for an SVM
+	
+	\begin{equation*}
+	\begin{aligned}
+	& \underset{\alpha}{\text{max}} 
+	& & g ( \{ \alpha_n \}, \{ \lambda_n \} ) = \sum_n{\alpha_n} - \frac{1}{2} \sum_{m, n}{ y_m y_n \alpha_m \alpha_n K(x_m, x_n)} + C \sum_n{ \big( \xi_n - p \xi_n^p \big) } \\
+	& \underset{\forall n}{\text{subject to}}
+	& & \alpha_n \geq 0 \\
+	& & & \sum_n{\alpha_n y_n} = 0 \\
+	& & & C_p \xi_n^{p-1} - \lambda_n - \alpha_n = 0 \\
+	& & & \lambda_n \geq 0 
+	\end{aligned}
+	\end{equation*}
 	Note that when $p = 1$, the third term in the dual formulation drops out and we're left with the original dual formulation for an SVM.
 	
 	\item The dual formulation for this more general case is more complex. With $p = 1$, the function to optimize over only has two terms, while in the more general case it has three.
+\end{enumerate}
+
+\section{Programming}
+
+\subsection{Data Preprocessing}
+The 3rd feature has a mean of 2.4600 and a standard deviation of 1.1223 \\
+The 10th feature has a mean of 2.5370 and a standard deviation of 1.1063 \\
+
+\subsection{Cross Validation for Linear SVM}
+\begin{enumerate}[label=\alph*.]
+	\item TODO:
+	\item TODO:
+\end{enumerate}
+
+\subsection{Linear SVM in LibSVM}
+\begin{enumerate}[label=\alph*.]
+	\item TODO:
+	\item TODO:
+\end{enumerate}
+
+\subsection{Kernel SVM in LibSVM}
+\begin{enumerate}[label=\alph*.]
+	\item TODO:
+	\item TODO:
 \end{enumerate}
 
 %\bibliographystyle{plain}
