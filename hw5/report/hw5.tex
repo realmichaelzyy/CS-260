@@ -88,9 +88,28 @@
 	\end{gather*}
 	Since  $K_1$ and $K_2$ are positive semidefinite, both terms above are positive, therefore $K_3$ is also positive semidefinite and a kernel matrix.
 	
-	\item TODO:
+	\item Consider a kernel $K_4$ defined by $k_4(\mathbf{x}, \mathbf{x'}) = f(\mathbf{x}) f(\mathbf{x'})$, where $f$ is an arbitrary real valued function. Consider the following definition of another function $f^*$:
+	\begin{gather*}
+		f^*(\mathbf{X}) = [ f(\mathbf{x_0}) f(\mathbf{x_1}) f(\mathbf{x_2}) \dots f(\mathbf{x_N}) ]
+	\end{gather*} 
+	From the definition above, we can describe the kernel matrix $K_4$ as $f^*(\mathbf{X}) f^*(\mathbf{X})^T$ and prove that it is semidefinite:
+	\begin{gather*}
+		x^T K_4 x \geq 0 \\
+		x^T ( f^*(\mathbf{X}) f^*(\mathbf{X})^T ) x \geq 0 \\
+		(x^T  f^*(\mathbf{X}))^2 \geq 0 \\
+	\end{gather*}
+	Since $K_4$ is positive semidefinite, $k_4$ is a valid kernel by mercer's theorem.
 	
-	\item TODO:
+	\item Consider a kernel $K_5$ defined by $k_5(\mathbf{x}, \mathbf{x'}) = k_1(\mathbf{x}, \mathbf{x'}) k_2(\mathbf{x}, \mathbf{x'})$. Let us denote the feature vector of $k_1$ with $u$ and the feature vector of $k_2$ with $v$. Assume that $k_1$ creates an N dimensional vector and $k_2$ creates an M dimension vector.
+	\begin{gather*}
+		k_5(\mathbf{x}, \mathbf{y}) = k_1(\mathbf{x}, \mathbf{y}) k_2(\mathbf{x}, \mathbf{y}) \\
+		k_5(\mathbf{x}, \mathbf{x'}) = \big( \sum^N{u_n(x) u_n(y)} \big) \big( \sum^M{v_m(x) v_m(y)} \big) \\
+		k_5(\mathbf{x}, \mathbf{x'}) = \sum^{M, N}{ \big( u_n(x) v_m(x) \big) \big( u_n(y) v_m(y) \big) } \\
+		k_5(\mathbf{x}, \mathbf{x'}) = \sum^{M, N}{ w_{mn}(x) w_{mn}(y) } \\
+		k_5(\mathbf{x}, \mathbf{x'}) = \mathbf{w}(x)^T \mathbf{w}(y)
+	\end{gather*}
+	We have shown above that the product of $k_1$ and $k_2$ can also be expressed as the dot product between two vectors in a new $M \cdot N$ feature space. Therefore, $k_5$ is itself a kernel.
+	
 \end{enumerate}
 
 \section{Soft Margin Hyperplanes}
