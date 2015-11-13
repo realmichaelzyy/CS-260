@@ -4,7 +4,6 @@
 \usepackage{amsfonts}
 \usepackage{graphicx}
 \usepackage{longtable}
-%\usepackage{natbib}
 \renewcommand{\thesubsection}{\alph{subsection}.}
 
 \begin{document}
@@ -35,9 +34,17 @@
 		\text{where } \mathbf{M_\lambda } = (\mathbf{X^T X} + \lambda \mathbf{I})^{-1}  \mathbf{X^T}
 	\end{gather*}
 	
-	\item TODO:
+	\item The variance term is calculated as follows:
+	\begin{gather*}
+		Var(\lambda) =  \mathbb{E}\bigg( \big( \mathbf{x^T} \beta_\lambda - \mathbb{E}( \mathbf{x^T} \beta_\lambda ) \big)^2 \bigg) \\
+		Var(\lambda) =  \mathbb{E}\bigg( \big( \mathbf{x^T} ( \beta_\lambda - \mathbb{E}( \beta_\lambda )) \big)^2 \bigg) \\
+		Var(\lambda) =  \mathbf{x^T} \mathbb{E}( \beta_\lambda - \mathbb{E}( \beta_\lambda )) \mathbf{x} \\
+		Var(\lambda) =  \mathbf{x^T} Var( \beta_\lambda ) \mathbf{x} \\
+		Var(\lambda) =  \mathbf{x^T} (\mathbf{M_\lambda \Sigma_\epsilon M_\lambda^T}) \mathbf{x} \\
+		\text{where } \mathbf{M_\lambda } = (\mathbf{X^T X} + \lambda \mathbf{I})^{-1}  \mathbf{X^T}
+	\end{gather*}
 
-	\item TODO:
+	\item The above equations show the impact of $\lambda$ on bias-variance tradeoff. When $\lambda$ is large, the resulting bias term is large (and variance is small) leading to a model that is \textbf{underfitting} and is too simple. When $\lambda$ is small, the resulting variance term is large (and bias is small) leading to a model that is \textbf{overfitting} and is likely too complex. The challenge with the above linear regression model lies in striking a balance between bias and variance to achieve the best possible model.
 \end{enumerate}
 
 \section{Kernelized Perceptron}
