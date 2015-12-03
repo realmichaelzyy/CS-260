@@ -1,0 +1,103 @@
+\documentclass[12pt]{article}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\renewcommand{\thesubsection}{\alph{subsection}.}
+
+\begin{document}
+\title{Homework \#6}
+\author{Yoav Zimmerman (304125151) \\
+	    CS 260: Machine Learning Algorithms \\
+	   Collaborators: Mark Ketenjian}
+\maketitle
+
+\section{Clustering}
+\begin{enumerate}[label=\alph*.]
+	\item The K-means clustering algorithm minimizes the following distortion measure:
+	\begin{gather*}
+		D = \sum_{n=1}^{N}{ \sum_{k=1}^{K}{ r_{nk} \lVert \mathbf{x_n} - \mathbf{\mu_k} \rVert^2_2}}
+	\end{gather*}
+	If we assume fixed values for $r_{nk}$, we can minimize $\mathbf{\mu_k}$, the prototype of each cluster, by taking the gradient of the distortion measure function with respect to $\mathbf{\mu_k}$ and setting it to zero.
+	\begin{gather*}
+		\cfrac{\partial}{ \partial \mathbf{\mu_k}} D = 0 \\
+		- \sum_{n: r_{nk} = 1}^{N}{ 2 \lVert \mathbf{x_n} - \mathbf{\mu_k} \rVert} = 0 \\
+		\sum_{n: r_{nk} = 1}^{N}{ \mathbf{\mu_k} } = \sum_{n: r_{nk} = 1}^{N}{ \mathbf{x_n} } \\
+		\mathbf{\mu_k}= \cfrac{\sum_{n: r_{nk} = 1}^{N}{ \mathbf{x_n} }}{ \sum_{n: r_{nk} = 1}^{N}{1}}
+	\end{gather*}
+	Therefore, the optimal $\mathbf{\mu_k}$ is the mean of all points associated with the k-th cluster.
+	\item For this problem, we assume the distortion measure is changed to the L1 norm:
+	\begin{gather*}
+		D = \sum_{n=1}^{N}{ \sum_{k=1}^{K}{ r_{nk} \lVert \mathbf{x_n} - \mathbf{\mu_k} \rVert_1}}
+	\end{gather*}
+	If we assume fixed values for $r_{nk}$, we can again minimize by taking the gradient of the distortion measure function with respect to $\mathbf{\mu_k}$.
+	\begin{gather*}
+		\cfrac{\partial}{ \partial \mathbf{\mu_k}} D =  0 \\
+		- \sum_{n: r_{nk} = 1}^{N}{ sign(\mathbf{x_n} - \mathbf{\mu_k})} = 0 
+	\end{gather*}
+	To see that $\mathbf{\mu_k}$ should be the elementwise median of all $x_n$, consider that the expression above only equals zero with an equal amount of columnwise positive and negative terms in the sum. This happens exactly when every element $d$ in $\mathbf{\mu_k^{(d)}}$ is the median of all $x_n^{(d)}$ such that half of $x_n^{(d)}$ are greater than $\mathbf{\mu_k^{(d)}}$ and half of $x_n^{(d)}$ are less than $\mathbf{\mu_k^{(d)}}$. It follows that $\mathbf{\mu_k}$ should be the elementwise median of all $x_n$ to minimize $D$.
+\end{enumerate}
+
+\section{Mixture Models}
+\begin{enumerate}[label=\alph*.]
+	\item The log-likelihood in terms of $X_i$ is:
+	\begin{gather*}
+		\mathcal{L} = \sum_i^N{ log( \lambda e^{- \lambda x_i})} \\
+		\mathcal{L} = \sum_i^N{ log(\lambda) - \lambda x_i)} \\
+		\mathcal{L} = N log(\lambda) - \sum_i^N{ \lambda x_i }
+	\end{gather*}
+\end{enumerate}
+
+\section{Linearly Constrained Linear Regression}
+\begin{enumerate}[label=\alph*.]
+	\item The following are the top five \textit{eigenfaces} of the Yale Face Database:
+	\begin{figure}[h]
+	\centering
+	\begin{subfigure}{.19\textwidth}
+		\centering
+		\includegraphics{eigenface_1.png}
+		\caption{Eigenface 1}
+	\end{subfigure}
+	\begin{subfigure}{.19\textwidth}
+		\centering
+		\includegraphics{eigenface_2.png}
+		\caption{Eigenface 2}
+	\end{subfigure}
+	\begin{subfigure}{.19\textwidth}
+		\centering
+		\includegraphics{eigenface_3.png}
+		\caption{Eigenface 3}
+	\end{subfigure}
+	\begin{subfigure}{.19\textwidth}
+		\centering
+		\includegraphics{eigenface_4.png}
+		\caption{Eigenface 4}
+	\end{subfigure}
+	\begin{subfigure}{.19\textwidth}
+		\centering
+		\includegraphics{eigenface_5.png}
+		\caption{Eigenface 5}
+	\end{subfigure}
+	\end{figure}
+	
+	\item The following are the optimal regularization parameters and classification test accuracies with that parameter, over different d-dimensional vectors.
+	\begin{center}
+		 \begin{tabular}{| c c c |} 
+		 \hline
+		 D & Optimal C & Test Accuracy \\
+		 \hline\hline
+		 20 & 16 & 76.397516 \\
+		 \hline
+		 50 & 8 & 87.577640 \\
+		 \hline
+		100 & 64 & 90.062112 \\
+		 \hline
+		200 & 16 & 93.167702 \\
+		 \hline
+		\end{tabular}
+	\end{center}
+\end{enumerate}
+
+\end{document}
